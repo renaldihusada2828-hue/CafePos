@@ -1,0 +1,63 @@
+flowchart LR
+  subgraph USERS["Pengguna"]
+    A["Admin / Owner"]
+    C["Kasir"]
+  end
+  subgraph FRONT["Frontend · Next.js"]
+    L["Login"]
+    D["Dashboard"]
+    P["POS"]
+    T["Riwayat Struk"]
+    M["Produk · Inventory · Resep"]
+    R["Laporan"]
+    U["Pengaturan Akun"]
+  end
+  subgraph BACK["Backend · Server Routes + RPC"]
+    AUTH["Supabase Auth"]
+    ROLE["Role authorization"]
+    CHECK["Validasi checkout"]
+    ACCOUNT["Provisioning / akun staf"]
+    VOID["Koreksi / void (admin only)"]
+    AUDIT["Audit log"]
+  end
+  subgraph DB["Supabase PostgreSQL · RLS"]
+    PROF[("Profiles")]
+    PROD[("Products")]
+    SALES[("Sales")]
+    ITEMS[("Sale Items")]
+    MAT[("Raw Materials")]
+    REC[("Recipes + Recipe Items")]
+    MOV[("Stock Movements")]
+    LOG[("Audit Logs")]
+  end
+  A --> L
+  C --> L
+  L --> AUTH --> ROLE
+  ROLE --> D
+  ROLE --> P
+  ROLE --> T
+  A --> M
+  A --> R
+  A --> U
+  P --> CHECK
+  CHECK --> PROD
+  CHECK --> REC
+  CHECK --> SALES
+  SALES --> ITEMS
+  CHECK --> MAT
+  CHECK --> MOV
+  CHECK --> AUDIT
+  ACCOUNT --> AUTH
+  ACCOUNT --> PROF
+  VOID --> SALES
+  VOID --> MOV
+  VOID --> LOG
+  ROLE --> PROF
+  M --> PROD
+  M --> MAT
+  M --> REC
+  R --> SALES
+  R --> MOV
+  AUDIT --> LOG
+  SEC["Batas keamanan: kasir tidak dapat mengubah / menghapus struk atau stok. RLS + role check. Service-role key hanya di server tepercaya."]
+  SEC -.-> DB
